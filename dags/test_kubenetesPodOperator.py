@@ -48,8 +48,9 @@ with DAG(
 
     t2 = KubernetesPodOperator(
         namespace='airflow',
-        image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
-        cmds=["sh", "-c", "echo 'Hello, this is Fluenta from GCR...'"],
+        image="python",
+        cmds=["bash", "-cx"],
+        arguments=["echo", "Khoa 10"],        
         name="ubuntu_18_0_4_1",
         task_id="Fluenta_from_GCR",
         get_logs=True
