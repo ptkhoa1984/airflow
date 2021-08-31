@@ -47,7 +47,7 @@ with DAG(
     )
 
     t2 = KubernetesPodOperator(
-        namespace='default',
+        namespace='airflow',
         image="python",
         cmds=["bash", "-cx"],
         arguments=["echo", "Khoa 10"],
