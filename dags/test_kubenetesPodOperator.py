@@ -1,60 +1,51 @@
+from datetime import timedelta
+
 from airflow import DAG
-from datetime import datetime, timedelta
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
-
-from textwrap import dedent
-
-# Operators; we need this to operate!
-from airflow.operators.bash import BashOperator
-from airflow.contrib.sensors.file_sensor import FileSensor
 from airflow.utils.dates import days_ago
 
-
 default_args = {
-    'owner': 'airflow',
+    'owner': 'Airflow',
     'depends_on_past': False,
-    'start_date': datetime.utcnow(),
+    'start_date': days_ago(0),
+    'catchup': False,
     'email': ['airflow@example.com'],
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=1)
+    'retries': 0,
+    'retry_delay': timedelta(minutes=5),
 }
 
-
-with DAG(
-    'kubernetes_sample',
+dag = DAG(
+    'dag_that_executes_via_KubernetesPodOperator',
     default_args=default_args,
-    description='kubernetes_sample',
-    schedule_interval=timedelta(days=1),
-    start_date=days_ago(1),
-    tags=['kubernetes_sample'],
-    catchup=False # the scheduler creates a DAG run only for the latest interval
-) as dag:
-    # [END instantiate_dag]
+    schedule_interval=timedelta(minutes=30),
+    max_active_runs=1,
+    concurrency=10
+)
 
-    start = DummyOperator(task_id='run_this_first1')
-    # start2 = DummyOperator(task_id='run_this_first2')
+# Generate 2 tasks
+tasks = ["task{}".format(i) for i in range(1, 3)]
+example_dag_complete_node = DummyOperator(task_id="example_dag_complete", dag=dag)
 
-    passing = KubernetesPodOperator(namespace='default',
-                          image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
-                          cmds=["Python","-c"],
-                          arguments=["print('hello world')"],
-                          labels={"foo": "bar"},
-                          name="ubuntu_18_0_4_1",
-                          task_id="ubuntu_18_0_4_1",
-                          get_logs=True
-                          )
+org_dags = []
+for task in tasks:
 
-    failing = KubernetesPodOperator(namespace='default',
-                          image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
-                          cmds=["sh", "-c", 'echo \'Sleeping..\'; echo \'Done!\''],
-                          labels={"foo": "bar"},
-                          name="ubuntu_18_0_4_2",
-                          task_id="ubuntu_18_0_4_2",
-                          get_logs=True
-                          )
-  
-    start >> [passing, failing]
-    # start1 >> start2
+    bash_command = 'echo HELLO'
+
+    org_node = KubernetesPodOperator(
+        namespace='default',
+        image="python",
+        cmds=["python", "-c"],
+        arguments=["print('HELLO')"],
+        labels={"foo": "bar"},
+        image_pull_policy="Always",
+        name=task,
+        task_id=task,
+        is_delete_operator_pod=False,
+        get_logs=True,
+        dag=dag
+    )
+
+    org_node.set_downstream(example_dag_complete_node)
