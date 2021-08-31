@@ -48,9 +48,9 @@ with DAG(
 
     t2 = KubernetesPodOperator(
         namespace='airflow',
-        image="python",
+        image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
         cmds=["sh", "-c", "echo 'Hello, this is Fluenta from GCR...'"],
-        name="python-image",
+        name="ubuntu_18_0_4_1",
         task_id="Fluenta_from_GCR",
         get_logs=True
     )
@@ -65,7 +65,7 @@ with DAG(
         namespace='airflow',
         image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
         cmds=["sh", "-c", "echo 'Hello, this is Dorset from GCR...'"],
-        name="ubuntu_18_0_4",
+        name="ubuntu_18_0_4_2",
         task_id="Dorset_from_GCR",
         get_logs=True
     )
