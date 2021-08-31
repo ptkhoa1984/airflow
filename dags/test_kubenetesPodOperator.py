@@ -48,12 +48,11 @@ with DAG(
 
     t2 = KubernetesPodOperator(
         namespace='airflow',
-        image="python",
-        cmds=["bash", "-cx"],
-        arguments=["echo", "Khoa 10"],
+        image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
+        cmds=["sh", "-c", "echo 'Hello, this is Fluenta from GCR...'"],
         name="ubuntu_18_0_4_1",
         task_id="Fluenta_from_GCR",
-        get_logs=True,
+        get_logs=True
     )
 
     t3 = BashOperator(
@@ -62,21 +61,20 @@ with DAG(
         bash_command="echo this is trans_2; sleep 1"
     )
 
-    # t4 = KubernetesPodOperator(
-    #     namespace='default',
-    #     image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
-    #     cmds=["sh", "-c", "echo 'Hello, this is Dorset from GCR...'"],
-    #     name="ubuntu_18_0_4_1",
-    #     task_id="Dorset_from_GCR",
-    #     get_logs=True
-    # )
+    t4 = KubernetesPodOperator(
+        namespace='airflow',
+        image='gcr.io/gcp-runtimes/ubuntu_18_0_4',
+        cmds=["sh", "-c", "echo 'Hello, this is Dorset from GCR...'"],
+        name="ubuntu_18_0_4_1",
+        task_id="Dorset_from_GCR",
+        get_logs=True
+    )
 
-    # t5 = BashOperator(
-    #     task_id='Planning_and_Budgeting',
-    #     bash_command="echo Planning_and_Budgeting"
-    # )    
-    # t0 >> t1 >> t2 >> t3 >> t4 >> t5
-    t0 >> t1 >> t2 >> t3
+    t5 = BashOperator(
+        task_id='Planning_and_Budgeting',
+        bash_command="echo Planning_and_Budgeting"
+    )    
+    t0 >> t1 >> t2 >> t3 >> t4 >> t5
 
 
     # start = DummyOperator(task_id='run_this_first')
