@@ -48,7 +48,7 @@ with DAG(
 
     t2 = KubernetesPodOperator(
         namespace='airflow',
-        image='eu.gcr.io/skyuk-uk-dsas-poc/fluenta-docker',
+        image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux:latest',
         cmds=["sh", "-c", "echo 'Hello, this is Fluenta from GCR...'"],
         name="fluenta-docker",
         task_id="Fluenta_from_GCR",
