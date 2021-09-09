@@ -4,6 +4,7 @@ from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOpera
 from airflow.operators.dummy_operator import DummyOperator
 
 from textwrap import dedent
+from kubernetes.client import models as k8s
 
 # Operators; we need this to operate!
 from airflow.operators.bash import BashOperator
@@ -50,7 +51,7 @@ with DAG(
         namespace='airflow',
         image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux:latest',
         cmds=["sh", "-c", "echo 'Hello, this is Fluenta from GCR...'"],
-        docker_conn_id='gcr',
+        image_pull_secrets=[k8s.V1LocalObjectReference('testgcr1')],
         name="fluenta-docker",
         task_id="Fluenta_from_GCR",
         get_logs=True
