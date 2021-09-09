@@ -51,7 +51,7 @@ with DAG(
         namespace='airflow',
         image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux:latest',
         cmds=["sh", "-c", "echo 'Hello, this is Fluenta from GCR...'"],
-        image_pull_secrets=[k8s.V1LocalObjectReference('testgcr1')],
+        image_pull_secrets=[k8s.V1LocalObjectReference('testgcrxxx')],
         name="fluenta-docker",
         task_id="Fluenta_from_GCR",
         get_logs=True
