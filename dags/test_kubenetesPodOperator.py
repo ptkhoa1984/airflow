@@ -130,7 +130,7 @@ with DAG(
 
     t11 = KubernetesPodOperator(
         namespace='airflow',
-        image='eu.gcr.io/skyuk-uk-dsas-poc/kp-core-model-ubuntu:0.1',
+        image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux:latest',
         cmds=["sh", "-c", "echo 'Khoa is here' > /root/khoa/khoa.txt"],
         name="trans_11",
         task_id="trans_11",
@@ -139,7 +139,7 @@ with DAG(
 
     t12 = KubernetesPodOperator(
         namespace='airflow',
-        image='eu.gcr.io/skyuk-uk-dsas-poc/kp-core-model-ubuntu:0.1',
+        image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux:latest',
         cmds=["sh", "-c", "cat /root/khoa/khoa.txt"],
         name="trans_12",
         task_id="trans_12",
