@@ -124,6 +124,8 @@ with DAG(
         cmds=["sh", "-c", "echo 'hello Khoa' > /root/khoa.txt", "cat /root/khoa.txt"],
         name="trans_1",
         task_id="trans_1",
+        volumes=[volume],
+        volume_mounts=[volume_mount],
         get_logs=True
     )
 
@@ -134,6 +136,8 @@ with DAG(
         cmds=["sh", "-c", "echo 'Khoa is here' > /root/khoa/khoa.txt"],
         name="trans_11",
         task_id="trans_11",
+        volumes=[volume],
+        volume_mounts=[volume_mount],
         get_logs=True
     )
 
