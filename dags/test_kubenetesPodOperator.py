@@ -25,3 +25,4 @@ with DAG(dag_id="example_k8s_secret_volume", start_date=days_ago(1), schedule_in
                                   in_cluster=False,
                                   startup_timeout_seconds=60,
                                   )
+    task1
