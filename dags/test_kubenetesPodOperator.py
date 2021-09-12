@@ -121,7 +121,7 @@ with DAG(
     t1 = KubernetesPodOperator(
         namespace='airflow',
         image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux:latest',
-        cmds=["sh", "-c", "echo Khoa"],
+        cmds=["sh", "-c", "echo 'hello Khoa'"],
         name="trans_1",
         task_id="trans_1",
         get_logs=True
