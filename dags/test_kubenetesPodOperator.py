@@ -53,21 +53,21 @@ PERIOD = "'Y20.06'"
 ####################### variables when running on premise ######################
 BASE_PATH = "/Users/tpp02/OneDrive\ -\ Sky/code"
 
-T1_COMMAND = f"/opt/data/core_model/core_model/planning/Fluenta/fluenta_plan_w_sql.py \
+T1_COMMAND = f"python2 /opt/data/core_model/core_model/planning/Fluenta/fluenta_plan_w_sql.py \
         --forecast_id={FORECAST_ID} \
         --cdn_plan_id={CDN_PLAN_ID} \
         --territory={TERRITORY} \
         --failover_id={FAILOVER_ID} \
         --filename /opt/data/core_model/core_model/planning/Fluenta/khoa --soip"
 
-T2_COMMAND = f"python /opt/data/fluenta-master/fluenta/app.py \
+T2_COMMAND = f"python3 /opt/data/fluenta-master/fluenta/app.py \
         -path_in /opt/data/fluenta-master/tests/test_data/test_data_plan_p350.txt \
         -filename /opt/data/fluenta-master/fluenta/out \
         -period {PERIOD}"
 
-T3_COMMAND = f"python {BASE_PATH}/khoa_code/airflow_pip/transform_fluenta_output.py"
+T3_COMMAND = f"python3 {BASE_PATH}/khoa_code/airflow_pip/transform_fluenta_output.py"
 
-T4_COMMAND = f"python /opt/data/dorset-develop/poc/pop_tactical/main_pop_tactical.py"
+T4_COMMAND = f"python3 /opt/data/dorset-develop/poc/pop_tactical/main_pop_tactical.py"
 
 # [START default_args]
 # These args will get passed on to each operator
@@ -94,22 +94,41 @@ with DAG(
 ) as dag:
     # [END instantiate_dag]
 
-
-    # add username/pass/url in postgres_default (in Admin/Connections/postgres_default)
+    # ***** go to Admin/Connections/postgres) *****
+    # Conn Id: postgres_default
+    # Host: core.iap.sns.sky.com
+    # Schema: core
+    # Login: khoa.phan
+    # Password:
+    # Port: 5432
+    # *********************************************
     t0 = SqlSensor(
         task_id='Forecast',
         conn_id='postgres_default',
         sql=T0_COMMAND
     )
 
-#     t1 = KubernetesPodOperator(
-#         namespace='airflow',
-#         image='eu.gcr.io/skyuk-uk-dsas-poc/kp-core-model-ubuntu:0.1',
-#         cmds=["sh", "-c", T1_COMMAND],
-#         name="trans_1",
-#         task_id="trans_1",
-#         get_logs=True
-#     )
+    t1 = KubernetesPodOperator(
+        namespace='airflow',
+        image='eu.gcr.io/skyuk-uk-dsas-poc/kp-core-model-ubuntu:0.1',
+        cmds=["sh", "-c", T1_COMMAND],
+        name="trans_1",
+        task_id="trans_1",
+        get_logs=True
+    )
+
+
+    # t1 = BashOperator(
+    #     task_id='trans_1',
+    #     depends_on_past=False,
+    #     bash_command=T1_COMMAND
+    # )
+
+    # t2 = BashOperator(
+    #     task_id='Fluenta',
+    #     depends_on_past=False,
+    #     bash_command=T2_COMMAND
+    # )
 
     t2 = KubernetesPodOperator(
         namespace='airflow',
@@ -128,6 +147,11 @@ with DAG(
         bash_command="echo 'This is trans_2'"
     )
 
+    # t4 = BashOperator(
+    #     task_id='Dorset',
+    #     bash_command=T4_COMMAND
+    # )
+
     t4 = KubernetesPodOperator(
         namespace='airflow',
         image='eu.gcr.io/skyuk-uk-dsas-poc/kp-dorset-ubuntu:0.1',
@@ -141,8 +165,7 @@ with DAG(
         task_id='Planning_and_Budgeting',
         bash_command="echo 'This is Planning_and_Budgeting'"
     )    
-#     t0 >> t1 >> t2 >> t3 >> t4 >> t5
-    t0 >> t2 >> t3 >> t4 >> t5
+    t0 >> t1 >> t2 >> t3 >> t4 >> t5
 
 
 # [END tutorial]
