@@ -1,191 +1,27 @@
-#
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing,
-# software distributed under the License is distributed on an
-# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
-# KIND, either express or implied.  See the License for the
-# specific language governing permissions and limitations
-# under the License.
+from kubernetes.client import V1Volume, V1SecretVolumeSource, V1VolumeMount
 
-"""
-### Tutorial Documentation
-Documentation that goes along with the Airflow tutorial located
-[here](https://airflow.apache.org/tutorial.html)
-"""
-# [START tutorial]
-# [START import_module]
-from datetime import timedelta
-from textwrap import dedent
-
-# The DAG object; we'll need this to instantiate a DAG
 from airflow import DAG
-
-# Operators; we need this to operate!
-from airflow.operators.bash import BashOperator
-from airflow.contrib.sensors.file_sensor import FileSensor
-from airflow.sensors.sql import SqlSensor
+from airflow.kubernetes.secret import Secret
+from airflow.providers.cncf.kubernetes.operators.kubernetes_pod import KubernetesPodOperator
 from airflow.utils.dates import days_ago
-from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 
-from textwrap import dedent
-from kubernetes.client import models as k8s
+with DAG(dag_id="example_k8s_secret_volume", start_date=days_ago(1), schedule_interval='@once', tags=["example"]) as dag:
 
-# [END import_module]
+    secret = Secret('volume', '/etc/my-secret', 'db-credentials')
+    # Is Equal to below two lines
+    # secret_volume = V1Volume(name='my-secret-vol', secret=V1SecretVolumeSource(secret_name='db-credentials'))
+    # secret_volume_mount = V1VolumeMount(mount_path='/etc/my-secret', name='my-secret-vol', read_only=True)
 
-############################### common variables ###############################
-FORECAST_ID = 2417
-CDN_PLAN_ID = 2359
-TERRITORY = "UK"
-FAILOVER_ID = 33
-ID = 343
-T0_COMMAND = f"select * from inventory.end2end_path where id = {ID}"
-PERIOD = "'Y20.06'"
-
-####################### variables when running on premise ######################
-BASE_PATH = "/Users/tpp02/OneDrive\ -\ Sky/code"
-
-T1_COMMAND = f"python2 /opt/data/core_model/core_model/planning/Fluenta/fluenta_plan_w_sql.py \
-        --forecast_id={FORECAST_ID} \
-        --cdn_plan_id={CDN_PLAN_ID} \
-        --territory={TERRITORY} \
-        --failover_id={FAILOVER_ID} \
-        --filename /opt/data/core_model/core_model/planning/Fluenta/khoa --soip"
-
-T2_COMMAND = f"python3 /opt/data/fluenta-master/fluenta/app.py \
-        -path_in /opt/data/fluenta-master/tests/test_data/test_data_plan_p350.txt \
-        -filename /opt/data/fluenta-master/fluenta/out \
-        -period {PERIOD}"
-
-T3_COMMAND = f"python3 {BASE_PATH}/khoa_code/airflow_pip/transform_fluenta_output.py"
-
-T4_COMMAND = f"python3 /opt/data/dorset-develop/poc/pop_tactical/main_pop_tactical.py"
-
-
-volume_mount = k8s.V1VolumeMount(
-    name='test-volume', mount_path='/root/khoa', sub_path=None, read_only=False
-)
-
-volume = k8s.V1Volume(
-    name='test-volume',
-    persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name='test-volume'),
-)
-
-# [START default_args]
-# These args will get passed on to each operator
-# You can override them on a per-task basis during operator initialization
-default_args = {
-    'owner': 'airflow',
-    'depends_on_past': False,
-    'email': ['airflow@example.com'],
-    'email_on_failure': False,
-    'email_on_retry': False,
-    'schedule_interval': '@daily',    
-}
-# [END default_args]
-
-# [START instantiate_dag]
-with DAG(
-    'SC_pipeline_half_real',
-    default_args=default_args,
-    description='SC_pipeline_half_real',
-    schedule_interval=timedelta(days=1),
-    start_date=days_ago(1),
-    tags=['SC_pipeline_half_real'],
-    catchup=False
-) as dag:
-    # [END instantiate_dag]
-
-    # ***** go to Admin/Connections/postgres) *****
-    # Conn Id: postgres_default
-    # Host: core.iap.sns.sky.com
-    # Schema: core
-    # Login: khoa.phan
-    # Password:
-    # Port: 5432
-    # *********************************************
-#     t0 = SqlSensor(
-#         task_id='Forecast',
-#         conn_id='postgres_default',
-#         sql=T0_COMMAND
-#     )
-
-    t1 = KubernetesPodOperator(
-        namespace='airflow',
-        image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux:latest',
-        cmds=["sh", "-c", "echo 'hello Khoa' > /root/khoa.txt", "cat /root/khoa.txt"],
-        name="trans_1",
-        task_id="trans_1",
-        volumes=[volume],
-        volume_mounts=[volume_mount],
-        get_logs=True
-    )
-
-
-    t11 = KubernetesPodOperator(
-        namespace='airflow',
-        image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux:latest',
-        cmds=["sh", "-c", "echo 'Khoa is here' > /root/khoa/khoa.txt"],
-        name="trans_11",
-        task_id="trans_11",
-        volumes=[volume],
-        volume_mounts=[volume_mount],
-        get_logs=True
-    )
-
-    t12 = KubernetesPodOperator(
-        namespace='airflow',
-        image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux:latest',
-        cmds=["sh", "-c", "cat /root/khoa/khoa.txt"],
-        name="trans_12",
-        task_id="trans_12",
-        get_logs=True
-    )
-
-    t2 = KubernetesPodOperator(
-        namespace='airflow',
-        image='eu.gcr.io/skyuk-uk-dsas-poc/kp-fluenta-ubuntu:0.1',
-        cmds=["sh", "-c", T2_COMMAND],
-        name="Fluenta",
-        task_id="Fluenta",
-        get_logs=True
-    )
-
-
-    t3 = BashOperator(
-        task_id='trans_2',
-        depends_on_past=False,
-        # bash_command=T3_COMMAND,
-        bash_command="echo 'This is trans_2'"
-    )
-
-    # t4 = BashOperator(
-    #     task_id='Dorset',
-    #     bash_command=T4_COMMAND
-    # )
-
-    t4 = KubernetesPodOperator(
-        namespace='airflow',
-        image='eu.gcr.io/skyuk-uk-dsas-poc/kp-dorset-ubuntu:0.1',
-        cmds=["sh", "-c", T4_COMMAND],
-        name="Dorset",
-        task_id="Dorset",
-        get_logs=True
-    ) 
-
-    t5 = BashOperator(
-        task_id='Planning_and_Budgeting',
-        bash_command="echo 'This is Planning_and_Budgeting'"
-    )    
-    t1 >> t11 >> t12 >> t2 >> t3 >> t4 >> t5
-
-
-# [END tutorial]
+    task1 = KubernetesPodOperator(task_id='SC_pipeline_half_real',
+                                  name='airflow_pod_operator_secret_volume',
+                                  namespace='default',
+                                  secrets=[secret, ],
+                                  # secrets is equal to below two lines
+                                  # volumes=[secret_volume, ],
+                                  # volume_mounts=[secret_volume_mount, ],
+                                  image='alpine',
+                                  cmds=["sh", "-c",
+                                        'echo "Secret Directory Content "$(ls -l /etc/my-secret)'],
+                                  in_cluster=False,
+                                  startup_timeout_seconds=60,
+                                  )
