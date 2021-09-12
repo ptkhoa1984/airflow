@@ -112,20 +112,20 @@ with DAG(
     # Password:
     # Port: 5432
     # *********************************************
-    t0 = SqlSensor(
-        task_id='Forecast',
-        conn_id='postgres_default',
-        sql=T0_COMMAND
-    )
+#     t0 = SqlSensor(
+#         task_id='Forecast',
+#         conn_id='postgres_default',
+#         sql=T0_COMMAND
+#     )
 
-    t1 = KubernetesPodOperator(
-        namespace='airflow',
-        image='eu.gcr.io/skyuk-uk-dsas-poc/kp-core-model-ubuntu:0.1',
-        cmds=["sh", "-c", T1_COMMAND],
-        name="trans_1",
-        task_id="trans_1",
-        get_logs=True
-    )
+#     t1 = KubernetesPodOperator(
+#         namespace='airflow',
+#         image='eu.gcr.io/skyuk-uk-dsas-poc/kp-core-model-ubuntu:0.1',
+#         cmds=["sh", "-c", T1_COMMAND],
+#         name="trans_1",
+#         task_id="trans_1",
+#         get_logs=True
+#     )
 
 
     t11 = KubernetesPodOperator(
@@ -181,7 +181,7 @@ with DAG(
         task_id='Planning_and_Budgeting',
         bash_command="echo 'This is Planning_and_Budgeting'"
     )    
-    t0 >> t1 >> t11 >> t12 >> t2 >> t3 >> t4 >> t5
+    t11 >> t12 >> t2 >> t3 >> t4 >> t5
 
 
 # [END tutorial]
