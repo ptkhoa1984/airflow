@@ -13,8 +13,8 @@ with DAG(dag_id="example_k8s_secret_volume", start_date=days_ago(1), schedule_in
     # secret_volume_mount = V1VolumeMount(mount_path='/etc/my-secret', name='my-secret-vol', read_only=True)
 
     task1 = KubernetesPodOperator(task_id='SC_pipeline_half_real',
-                                  name='airflow_pod_operator_secret_volume',
-                                  namespace='default',
+                                  name='SC_pipeline_half_real',
+                                  namespace='airflow',
                                   secrets=[secret, ],
                                   # secrets is equal to below two lines
                                   # volumes=[secret_volume, ],
