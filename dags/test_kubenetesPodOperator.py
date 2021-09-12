@@ -69,6 +69,16 @@ T3_COMMAND = f"python3 {BASE_PATH}/khoa_code/airflow_pip/transform_fluenta_outpu
 
 T4_COMMAND = f"python3 /opt/data/dorset-develop/poc/pop_tactical/main_pop_tactical.py"
 
+
+volume_mount = k8s.V1VolumeMount(
+    name='test-volume', mount_path='/root/khoa', sub_path=None, read_only=False
+)
+
+volume = k8s.V1Volume(
+    name='test-volume',
+    persistent_volume_claim=k8s.V1PersistentVolumeClaimVolumeSource(claim_name='test-volume'),
+)
+
 # [START default_args]
 # These args will get passed on to each operator
 # You can override them on a per-task basis during operator initialization
@@ -118,17 +128,23 @@ with DAG(
     )
 
 
-    # t1 = BashOperator(
-    #     task_id='trans_1',
-    #     depends_on_past=False,
-    #     bash_command=T1_COMMAND
-    # )
+    t11 = KubernetesPodOperator(
+        namespace='airflow',
+        image='eu.gcr.io/skyuk-uk-dsas-poc/kp-core-model-ubuntu:0.1',
+        cmds=["sh", "-c", "echo 'Khoa is here' > /root/khoa/khoa.txt"],
+        name="trans_11",
+        task_id="trans_11",
+        get_logs=True
+    )
 
-    # t2 = BashOperator(
-    #     task_id='Fluenta',
-    #     depends_on_past=False,
-    #     bash_command=T2_COMMAND
-    # )
+    t12 = KubernetesPodOperator(
+        namespace='airflow',
+        image='eu.gcr.io/skyuk-uk-dsas-poc/kp-core-model-ubuntu:0.1',
+        cmds=["sh", "-c", "cat /root/khoa/khoa.txt"],
+        name="trans_12",
+        task_id="trans_12",
+        get_logs=True
+    )
 
     t2 = KubernetesPodOperator(
         namespace='airflow',
@@ -165,7 +181,7 @@ with DAG(
         task_id='Planning_and_Budgeting',
         bash_command="echo 'This is Planning_and_Budgeting'"
     )    
-    t0 >> t1 >> t2 >> t3 >> t4 >> t5
+    t0 >> t1 >> t11 >> t12 >> t2 >> t3 >> t4 >> t5
 
 
 # [END tutorial]
