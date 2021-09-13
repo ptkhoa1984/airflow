@@ -189,9 +189,7 @@ with DAG(
         task_id='trans_2',
         depends_on_past=False,
         # bash_command=T3_COMMAND,
-        bash_command="echo 'This is trans_2'",
-        volumes=[myapp_volume, ],
-        volume_mounts=[myapp_volume_mount, ],
+        bash_command="echo 'This is trans_2'",        
     )
 
     # t4 = BashOperator(
