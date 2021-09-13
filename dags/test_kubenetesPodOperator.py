@@ -61,11 +61,11 @@ T1_COMMAND = f"python2 /opt/data/core_model/core_model/planning/Fluenta/fluenta_
         --failover_id={FAILOVER_ID} \
         --filename /root/myapp/khoa --soip"
 
-T2_COMMAND = f"python3 /opt/data/fluenta-master/fluenta/app.py \
-        -path_in /root/myapp/khoa \
-        -filename /opt/data/fluenta-master/fluenta/out \
-        -period {PERIOD}"
-# T2_COMMAND = 'echo "Reading date from khoa.txt : "$(cat /root/myapp/khoa)'
+# T2_COMMAND = f"python3 /opt/data/fluenta-master/fluenta/app.py \
+#         -path_in /root/myapp/khoa \
+#         -filename /opt/data/fluenta-master/fluenta/out \
+#         -period {PERIOD}"
+T2_COMMAND = 'echo "Reading date from khoa.txt : "$(cat /root/myapp/khoa)'
 
 T3_COMMAND = f"python3 {BASE_PATH}/khoa_code/airflow_pip/transform_fluenta_output.py"
 
