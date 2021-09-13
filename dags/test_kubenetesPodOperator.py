@@ -59,7 +59,7 @@ T1_COMMAND = f"python2 /opt/data/core_model/core_model/planning/Fluenta/fluenta_
         --cdn_plan_id={CDN_PLAN_ID} \
         --territory={TERRITORY} \
         --failover_id={FAILOVER_ID} \
-        --filename /root/myapp/khoa --soip"
+        --filename /opt/data/core_model/core_model/planning/Fluenta/khoa --soip"
 
 T2_COMMAND = f"python3 /opt/data/fluenta-master/fluenta/app.py \
         -path_in /root/myapp/khoa \
@@ -167,8 +167,8 @@ with DAG(
         cmds=["sh", "-c", T1_COMMAND],
         name="trans_1",
         task_id="trans_1",
-        volumes=[myapp_volume, ],
-        volume_mounts=[myapp_volume_mount, ],
+#         volumes=[myapp_volume, ],
+#         volume_mounts=[myapp_volume_mount, ],
         get_logs=True
     )
 
