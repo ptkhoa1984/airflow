@@ -167,8 +167,8 @@ with DAG(
         cmds=["sh", "-c", T1_COMMAND],
         name="trans_1",
         task_id="trans_1",
-#         volumes=[myapp_volume, ],
-#         volume_mounts=[myapp_volume_mount, ],
+        volumes=[myapp_volume, ],
+        volume_mounts=[myapp_volume_mount, ],
         get_logs=True
     )
 
