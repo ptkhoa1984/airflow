@@ -17,7 +17,7 @@ with DAG(dag_id="example_k8s_volume", start_date=days_ago(1),
                                  namespace='airflow',
                                  image='eu.gcr.io/skyuk-uk-dsas-poc/alpine-linux',
                                  cmds=["sh", "-c",
-                                       'hello from Khoa',
+                                       "echo 'hello from Khoa'",
                                        ],
                                  startup_timeout_seconds=60,
                                  )
