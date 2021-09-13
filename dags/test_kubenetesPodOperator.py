@@ -62,7 +62,7 @@ T1_COMMAND = f"python2 /opt/data/core_model/core_model/planning/Fluenta/fluenta_
         --filename /root/myapp/khoa --soip"
 
 T2_COMMAND = f"python3 /opt/data/fluenta-master/fluenta/app.py \
-        -path_in /root/myapp/khoa \
+        -path_in /root/myapp/khoa11 \
         -filename /opt/data/fluenta-master/fluenta/out \
         -period {PERIOD}"
 
